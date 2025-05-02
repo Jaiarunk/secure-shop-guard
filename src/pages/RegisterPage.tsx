@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import Captcha from "@/components/Captcha";
 import { useToast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const RegisterPage = () => {
   const [fullName, setFullName] = useState("");
@@ -17,10 +18,13 @@ const RegisterPage = () => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [isCaptchaValid, setIsCaptchaValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [authError, setAuthError] = useState("");
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError("");
     
     if (password !== confirmPassword) {
       toast({
@@ -53,12 +57,22 @@ const RegisterPage = () => {
     
     // Simulate registration process
     setTimeout(() => {
-      toast({
-        title: "Registration Successful",
-        description: "Welcome to SecureShop!",
-      });
+      // For demo purposes: always succeed unless email contains "error"
+      if (email.includes("error")) {
+        setAuthError("This email is already in use. Please try another.");
+        toast({
+          title: "Registration Failed",
+          description: "This email is already in use.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Registration Successful",
+          description: "Welcome to SecureShop!",
+        });
+        navigate("/"); // Redirect to homepage on success
+      }
       setIsSubmitting(false);
-      // In a real app, you would redirect the user or set authentication state
     }, 1500);
   };
 
@@ -70,6 +84,12 @@ const RegisterPage = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">
+            {authError && (
+              <Alert variant="destructive">
+                <AlertDescription>{authError}</AlertDescription>
+              </Alert>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="fullName">Full Name</Label>
               <Input

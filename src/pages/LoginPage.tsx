@@ -1,22 +1,26 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Captcha from "@/components/Captcha";
 import { useToast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isCaptchaValid, setIsCaptchaValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [authError, setAuthError] = useState("");
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError("");
     
     if (!isCaptchaValid) {
       toast({
@@ -31,12 +35,22 @@ const LoginPage = () => {
     
     // Simulate login process
     setTimeout(() => {
-      toast({
-        title: "Login Successful",
-        description: "Welcome back to SecureShop!",
-      });
+      // For demo purposes: Success if password contains "pass", fail otherwise
+      if (password.includes("pass")) {
+        toast({
+          title: "Login Successful",
+          description: "Welcome back to SecureShop!",
+        });
+        navigate("/"); // Redirect to homepage on success
+      } else {
+        setAuthError("Invalid email or password. Please try again.");
+        toast({
+          title: "Login Failed",
+          description: "Invalid email or password.",
+          variant: "destructive",
+        });
+      }
       setIsSubmitting(false);
-      // In a real app, you would redirect the user or set authentication state
     }, 1500);
   };
 
@@ -48,6 +62,12 @@ const LoginPage = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
+            {authError && (
+              <Alert variant="destructive">
+                <AlertDescription>{authError}</AlertDescription>
+              </Alert>
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
